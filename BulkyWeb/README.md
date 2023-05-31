@@ -1,1 +1,0 @@
-﻿# BulkyWeb project for learning purpose
