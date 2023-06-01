@@ -1,7 +1,18 @@
+using BulkyWeb.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+/*
+ dbContextni servicega qo'shganda, u auto dependency injection bo'ladi
+ya'ni, masalan, controllerni contstructoriga shunchaki chaqirib qo'yilsa, uning obyekti olinadi.
+Aks holda, controller ichida chaqirishdan oldin, undan new bilan obyekt olishga to'g'ri keladi
+ */
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+	options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
 var app = builder.Build();
 
