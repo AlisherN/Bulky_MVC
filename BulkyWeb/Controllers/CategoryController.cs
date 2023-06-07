@@ -1,4 +1,5 @@
 ﻿using Bulky.DataAccess.Data;
+using Bulky.DataAccess.Repository.IRepository;
 using Bulky.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,16 +7,16 @@ namespace BulkyWeb.Controllers
 {
 	public class CategoryController : Controller
 	{
-		private readonly ApplicationDbContext _db;
+		private readonly ICategoryRepository _categoryRepository;
 
-		public CategoryController(ApplicationDbContext db) 
+		public CategoryController(ICategoryRepository db) 
 		{
-			_db = db;
+			_categoryRepository = db;
 		}
 
 		public IActionResult Index()
 		{
-			List<Category> categoryList = _db.categories.ToList();
+			List<Category> categoryList = _categoryRepository.GetAll().ToList();
 			return View(categoryList);
 		}
 
@@ -38,8 +39,8 @@ namespace BulkyWeb.Controllers
 
 			if (ModelState.IsValid)
 			{
-                _db.categories.Add(category);
-                _db.SaveChanges();
+                _categoryRepository.Add(category);
+                _categoryRepository.Save();
 				TempData["success"] = "Category created successfully!";
                 return RedirectToAction("Index");
             }
@@ -54,7 +55,7 @@ namespace BulkyWeb.Controllers
 				return NotFound();
 			}
 
-            Category? category = _db.categories.Find(id);
+            Category? category = _categoryRepository.Get(u => u.Id == id);
 			//Category? category1 = _db.categories.FirstOrDefault(c => c.Name == "Thriller"); // 2-usul
 			//Category? category1 = _db.categories.Where(c => c.Id == id).FirstOrDefault(); // 3-usul
 
@@ -71,8 +72,8 @@ namespace BulkyWeb.Controllers
 		{
 			if (ModelState.IsValid) 
 			{
-				_db.categories.Update(category);
-				_db.SaveChanges();
+				_categoryRepository.Update(category);
+				_categoryRepository.Save();
                 TempData["success"] = "Category updated successfully!";
                 return RedirectToAction("Index");
             }
@@ -82,14 +83,14 @@ namespace BulkyWeb.Controllers
 		[HttpPost, ActionName("Delete")]
 		public IActionResult DeletePost(int? id)
 		{
-			Category? category = _db.categories.Find(id);
+			Category? category = _categoryRepository.Get(u => u.Id == id);
 			if (category == null)
 			{
 				NotFound();
 			}
 
-			_db.categories.Remove(category);
-			_db.SaveChanges();
+			_categoryRepository.Remove(category);
+			_categoryRepository.Save();
             TempData["success"] = "Category deleted successfully!";
 
             return RedirectToAction("Index");
