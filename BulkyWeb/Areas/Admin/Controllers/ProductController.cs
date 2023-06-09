@@ -1,6 +1,8 @@
 ﻿using Bulky.DataAccess.Repository.IRepository;
 using Bulky.Models;
+using Bulky.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BulkyWeb.Areas.Admin.Controllers
 {
@@ -23,26 +25,44 @@ namespace BulkyWeb.Areas.Admin.Controllers
 
         public IActionResult Create()
         {
-            return View();
+            IEnumerable<SelectListItem> categories = _db.Category.GetAll().Select(u => new SelectListItem
+            {
+                Text = u.Name,
+                Value = u.Id.ToString(),
+            });
+            //ViewBag.CategoryList = categories;
+            //ViewData["CategoryList"] = categories;
+            ProductVM productVM = new()
+            {
+                CategoryList = categories,
+                Product = new Product()
+            };
+            return View(productVM);
         }
 
         [HttpPost]
-        public IActionResult Create(Product product)
+        public IActionResult Create(ProductVM vm)
         {
-            if (product.Title == null || product.Title.ToLower() == "test")
+            if (vm.Product.Title == null || vm.Product.Title.ToLower() == "test")
             {
                 ModelState.AddModelError("", "Berilgan nom mahsulot uchun mos emas!");
             }
 
             if (ModelState.IsValid)
             {
-                _db.Product.Add(product);
+                _db.Product.Add(vm.Product);
                 _db.Save();
                 TempData["success"] = "Product created successfully!";
                 return RedirectToAction("Index");
+            } else
+            { // salashda xatolik bo'lganda qytib create viewni yangi model bilan ochish
+                vm.CategoryList = _db.Category.GetAll().Select(u => new SelectListItem
+                {
+                    Text = u.Name,
+                    Value = u.Id.ToString(),
+                });
+                return View(vm);
             }
-
-            return View();
         }
 
         public IActionResult Edit(int? id)
