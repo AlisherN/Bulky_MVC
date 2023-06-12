@@ -11,9 +11,12 @@ namespace BulkyWeb.Areas.Admin.Controllers
     {
         private IUnitOfWork _db;
 
-        public ProductController(IUnitOfWork db)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        public ProductController(IUnitOfWork db, IWebHostEnvironment webHostEnvironment)
         {
             _db = db;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public IActionResult Index()
@@ -49,7 +52,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(ProductVM vm, IFormFile? file)
+        public IActionResult Upsert(ProductVM vm, IFormFile? file)
         {
             if (vm.Product.Title == null || vm.Product.Title.ToLower() == "test")
             {
@@ -58,7 +61,40 @@ namespace BulkyWeb.Areas.Admin.Controllers
 
             if (ModelState.IsValid)
             {
-                _db.Product.Add(vm.Product);
+                string wwwRootPath = _webHostEnvironment.WebRootPath;
+                if (file != null)
+                {
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName); // random name for a file
+                    string productPath = Path.Combine(wwwRootPath, @"images/product");
+
+                    if (!string.IsNullOrEmpty(vm.Product.ImageUrl))
+                    {
+                        // delete the old image
+                        var oldImagePath = Path.Combine(wwwRootPath, vm.Product.ImageUrl.TrimStart('\\'));
+
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
+                    using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
+                    {
+                        file.CopyTo(fileStream);
+                    }
+
+                    vm.Product.ImageUrl = @"\images\product\" + fileName;
+                }
+
+                if (vm.Product.Id == 0)
+                {
+                    _db.Product.Add(vm.Product);
+                }
+                else
+                {
+                    _db.Product.Update(vm.Product);
+                }
+
                 _db.Save();
                 TempData["success"] = "Product created successfully!";
                 return RedirectToAction("Index");
