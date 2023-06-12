@@ -23,7 +23,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
             return View(products);
         }
 
-        public IActionResult Create()
+        public IActionResult Upsert(int? id)
         {
             IEnumerable<SelectListItem> categories = _db.Category.GetAll().Select(u => new SelectListItem
             {
@@ -37,11 +37,19 @@ namespace BulkyWeb.Areas.Admin.Controllers
                 CategoryList = categories,
                 Product = new Product()
             };
-            return View(productVM);
+
+            if (id == null || id == 0)
+            {
+                return View(productVM);
+            } else
+            {
+                productVM.Product = _db.Product.Get(u => u.Id == id);
+                return View(productVM);
+            }
         }
 
         [HttpPost]
-        public IActionResult Create(ProductVM vm)
+        public IActionResult Create(ProductVM vm, IFormFile? file)
         {
             if (vm.Product.Title == null || vm.Product.Title.ToLower() == "test")
             {
@@ -64,8 +72,8 @@ namespace BulkyWeb.Areas.Admin.Controllers
                 return View(vm);
             }
         }
-
-        public IActionResult Edit(int? id)
+        // Tepada Upset metodi yaratilgani uchun, endi bu metod shart emas
+/*        public IActionResult Edit(int? id)
         {
             if (id == null || id <= 0)
             {
@@ -80,7 +88,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
             }
 
             return View(product);
-        }
+        }*/
 
         [HttpPost]
         public IActionResult Edit(Product product)
