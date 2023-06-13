@@ -11,7 +11,7 @@
             </a>
         </div>
     </div>
-    <table class="table table-bordered table-striped">
+    <table id="tblData" class="table table-bordered table-striped" style="width: 100%">
         <thead>
             <tr>
                 <th>
@@ -21,14 +21,24 @@
                     Product ISBN
                 </th>
                 <th>
+                    List Price
+                </th>
+                <th>
                     Product Author
+                </th>
+                <th>
+                    Category
                 </th>
                 <th>
                     Action
                 </th>
             </tr>
         </thead>
-        <tbody>
+        @*Quyidagi kod MVCda ishlayotgan edi. Keyin DataTable plugin yordamida
+        ajax bilan olinadigan qilingandan keyin kerak bo'lmadi*@
+        @*<tbody>
+
+            
             @foreach (Product product in Model.OrderBy(o => o.Id))
             {
                 <tr>
@@ -50,6 +60,10 @@
                     </td>
                 </tr>
             }
-        </tbody>
+        </tbody>*@
     </table>
 </div>
+
+@section Scripts{
+`<script src="~/js/product.js"></script>
+}

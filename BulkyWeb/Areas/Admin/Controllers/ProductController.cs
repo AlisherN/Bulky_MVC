@@ -155,5 +155,38 @@ namespace BulkyWeb.Areas.Admin.Controllers
 
             return RedirectToAction("Index");
         }
+
+        #region API CALLS
+
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            List<Product> products = _db.Product.GetAll(includeProperties: "Category").ToList();
+            return Json(new { data = products });
+        }
+
+        [HttpDelete]
+        public IActionResult Delete(int? id)
+        {
+            var product = _db.Product.Get(u => u.Id == id);
+            if (product == null)
+            {
+                return Json(new { success = false, message = "Error while deleting" });
+            }
+
+            var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, product.ImageUrl.TrimStart('\\'));
+
+            if (System.IO.File.Exists(oldImagePath))
+            {
+                System.IO.File.Delete(oldImagePath);
+            }
+
+            _db.Product.Remove(product);
+            _db.Save();
+
+            return Json(new { success = true, message = "Deleted successfully" });
+        }
+
+        #endregion
     }
 }
